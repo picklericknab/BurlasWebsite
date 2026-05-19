@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binary Search Tree Visualizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="theme-toggle-wrap">
+    <button id="theme-toggle" title="Toggle theme">&#9790;</button>
+  </div>
+
+  <header>
+    <h1>Binary Search Tree Visualizer</h1>
+    <p class="subtitle">A simple tool to understand BST insertion and structure</p>
+  </header>
+
+  <main>
+    <section class="controls">
+      <div class="input-row">
+        <input type="number" id="node-input" placeholder="Enter a number" min="-9999" max="9999" />
+        <button id="insert-btn">Insert</button>
+        <button id="random-btn">Random</button>
+        <button id="undo-btn">Undo</button>
+        <button id="clear-btn">Clear</button>
+      </div>
+      <div id="error-msg" class="error-msg hidden"></div>
+    </section>
+
+    <div class="main-layout">
+      <div class="left-panel">
+        <section class="tree-section">
+          <div class="section-label">Tree View</div>
+          <div id="canvas-wrap">
+            <canvas id="tree-canvas"></canvas>
+            <div id="empty-msg">Tree is empty. Insert a node to begin.</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="right-panel">
+        <section class="info-panel">
+          <div class="section-label">Tree Info</div>
+          <table class="info-table">
+            <tr><td>Status</td><td id="info-status">Empty</td></tr>
+            <tr><td>Root</td><td id="info-root">—</td></tr>
+            <tr><td>Nodes</td><td id="info-count">0</td></tr>
+            <tr><td>Height</td><td id="info-height">0</td></tr>
+          </table>
+        </section>
+
+        <section class="log-panel">
+          <div class="section-label">Operation Log</div>
+          <ul id="op-log"></ul>
+        </section>
+      </div>
+    </div>
+
+    <section class="edu-section">
+      <div class="section-label">About Binary Search Trees</div>
+      <div class="edu-grid">
+        <div class="edu-card">
+          <h3>What is a BST?</h3>
+          <p>A Binary Search Tree is a node-based data structure where each node has at most two children. Every node follows a strict ordering rule based on its value.</p>
+        </div>
+        <div class="edu-card">
+          <h3>BST Property</h3>
+          <p>For any given node <strong>N</strong>:<br>
+          All values in the <strong>left subtree &lt; N</strong><br>
+          All values in the <strong>right subtree &gt; N</strong><br>
+          This property holds for every node in the tree.</p>
+        </div>
+        <div class="edu-card">
+          <h3>Real-World Uses</h3>
+          <p>BSTs are used in database indexing, autocomplete systems, file system directory trees, and anywhere you need fast sorted-order lookups.</p>
+        </div>
+        <div class="edu-card">
+          <h3>Time Complexity</h3>
+          <table class="complexity-table">
+            <tr><th>Operation</th><th>Average</th><th>Worst</th></tr>
+            <tr><td>Insert</td><td>O(log n)</td><td>O(n)</td></tr>
+            <tr><td>Search</td><td>O(log n)</td><td>O(n)</td></tr>
+            <tr><td>Delete</td><td>O(log n)</td><td>O(n)</td></tr>
+          </table>
+          <p class="note">Worst case occurs when the tree becomes a straight line (e.g., inserting sorted values).</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built for learning purposes &mdash; Binary Search Tree Visualizer</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
