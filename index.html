@@ -1,98 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Binary Search Tree Visualizer</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search Tree</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0f;
+    color: #e8e8e8;
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    padding: 16px 28px;
+    background: #111114;
+    border-bottom: 1px solid #1e2a1e;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #4ade80;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .controls {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 24px;
+    background: #111114;
+    border-bottom: 1px solid #1a1a1f;
+  }
+
+  .ctrl-group { display: flex; gap: 6px; align-items: center; }
+
+  input[type=number] {
+    width: 85px;
+    padding: 7px 10px;
+    background: #1a1a20;
+    border: 1px solid #2a2a35;
+    border-radius: 6px;
+    color: #e8e8e8;
+    font-family: 'Courier New', monospace;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type=number]:focus { border-color: #4ade80; }
+
+  button {
+    padding: 7px 16px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-insert { background: #4ade80; color: #0a1a0a; }
+  .btn-delete { background: #f87171; color: #1a0a0a; }
+  .btn-find   { background: #60a5fa; color: #0a0a1a; }
+  .btn-clear  { background: #2a2a35; color: #aaa; }
+  .btn-random { background: #a78bfa; color: #0d0a1a; }
+  button:hover  { filter: brightness(1.2); transform: translateY(-1px); }
+  button:active { transform: translateY(0); filter: brightness(0.95); }
+
+  #msg {
+    width: 100%;
+    max-width: 900px;
+    padding: 8px 24px;
+    font-size: 0.78rem;
+    color: #4ade80;
+    min-height: 28px;
+  }
+  #msg.err  { color: #f87171; }
+  #msg.info { color: #60a5fa; }
+  #msg.warn { color: #fbbf24; }
+
+  .info-bar {
+    width: 100%;
+    max-width: 900px;
+    padding: 4px 24px 10px;
+    display: flex;
+    gap: 24px;
+    font-size: 0.75rem;
+    color: #555;
+  }
+  .info-bar span b { color: #a3e4b0; }
+
+  #canvas-wrap {
+    width: 100%;
+    max-width: 900px;
+    padding: 0 24px;
+  }
+
+  canvas {
+    display: block;
+    background: #0d0f0d;
+    border-radius: 10px;
+    border: 1px solid #1a2a1a;
+    width: 100%;
+    height: 380px;
+  }
+
+  .traversals {
+    width: 100%;
+    max-width: 900px;
+    padding: 14px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .trav-row { display: flex; align-items: baseline; gap: 10px; font-size: 0.77rem; }
+  .trav-label { color: #555; width: 95px; flex-shrink: 0; }
+  .trav-vals  { color: #86efac; flex: 1; word-break: break-all; }
+</style>
 </head>
 <body>
-  <div id="theme-toggle-wrap">
-    <button id="theme-toggle" title="Toggle theme">&#9790;</button>
+
+<header><h1>&#9670; Binary Search Tree</h1></header>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <input type="number" id="val" placeholder="Value" />
+    <button class="btn-insert" onclick="doInsert()">Insert</button>
+    <button class="btn-delete" onclick="doDelete()">Delete</button>
+    <button class="btn-find"   onclick="doFind()">Find</button>
   </div>
+  <div class="ctrl-group">
+    <button class="btn-random" onclick="doRandom()">Random</button>
+    <button class="btn-clear"  onclick="doClear()">Clear</button>
+  </div>
+</div>
 
-  <header>
-    <h1>Binary Search Tree Visualizer</h1>
-    <p class="subtitle">A simple tool to understand BST insertion and structure</p>
-  </header>
+<div id="msg">Insert a value to begin. Press Enter to insert.</div>
 
-  <main>
-    <section class="controls">
-      <div class="input-row">
-        <input type="number" id="node-input" placeholder="Enter a number" min="-9999" max="9999" />
-        <button id="insert-btn">Insert</button>
-        <button id="random-btn">Random</button>
-        <button id="undo-btn">Undo</button>
-        <button id="clear-btn">Clear</button>
-      </div>
-      <div id="error-msg" class="error-msg hidden"></div>
-    </section>
+<div class="info-bar">
+  <span>Nodes: <b id="i-count">0</b></span>
+  <span>Height: <b id="i-height">0</b></span>
+  <span>Min: <b id="i-min">—</b></span>
+  <span>Max: <b id="i-max">—</b></span>
+</div>
 
-    <div class="main-layout">
-      <div class="left-panel">
-        <section class="tree-section">
-          <div class="section-label">Tree View</div>
-          <div id="canvas-wrap">
-            <canvas id="tree-canvas"></canvas>
-            <div id="empty-msg">Tree is empty. Insert a node to begin.</div>
-          </div>
-        </section>
-      </div>
+<div id="canvas-wrap"><canvas id="c"></canvas></div>
 
-      <div class="right-panel">
-        <section class="info-panel">
-          <div class="section-label">Tree Info</div>
-          <table class="info-table">
-            <tr><td>Status</td><td id="info-status">Empty</td></tr>
-            <tr><td>Root</td><td id="info-root">—</td></tr>
-            <tr><td>Nodes</td><td id="info-count">0</td></tr>
-            <tr><td>Height</td><td id="info-height">0</td></tr>
-          </table>
-        </section>
+<div class="traversals">
+  <div class="trav-row"><span class="trav-label">In-order:</span>   <span class="trav-vals" id="t-in">—</span></div>
+  <div class="trav-row"><span class="trav-label">Pre-order:</span>  <span class="trav-vals" id="t-pre">—</span></div>
+  <div class="trav-row"><span class="trav-label">Post-order:</span> <span class="trav-vals" id="t-post">—</span></div>
+</div>
 
-        <section class="log-panel">
-          <div class="section-label">Operation Log</div>
-          <ul id="op-log"></ul>
-        </section>
-      </div>
-    </div>
+<script>
+// ── BST ──────────────────────────────────────────────────────────
+class Node { constructor(v){this.v=v;this.l=this.r=null;} }
 
-    <section class="edu-section">
-      <div class="section-label">About Binary Search Trees</div>
-      <div class="edu-grid">
-        <div class="edu-card">
-          <h3>What is a BST?</h3>
-          <p>A Binary Search Tree is a node-based data structure where each node has at most two children. Every node follows a strict ordering rule based on its value.</p>
-        </div>
-        <div class="edu-card">
-          <h3>BST Property</h3>
-          <p>For any given node <strong>N</strong>:<br>
-          All values in the <strong>left subtree &lt; N</strong><br>
-          All values in the <strong>right subtree &gt; N</strong><br>
-          This property holds for every node in the tree.</p>
-        </div>
-        <div class="edu-card">
-          <h3>Real-World Uses</h3>
-          <p>BSTs are used in database indexing, autocomplete systems, file system directory trees, and anywhere you need fast sorted-order lookups.</p>
-        </div>
-        <div class="edu-card">
-          <h3>Time Complexity</h3>
-          <table class="complexity-table">
-            <tr><th>Operation</th><th>Average</th><th>Worst</th></tr>
-            <tr><td>Insert</td><td>O(log n)</td><td>O(n)</td></tr>
-            <tr><td>Search</td><td>O(log n)</td><td>O(n)</td></tr>
-            <tr><td>Delete</td><td>O(log n)</td><td>O(n)</td></tr>
-          </table>
-          <p class="note">Worst case occurs when the tree becomes a straight line (e.g., inserting sorted values).</p>
-        </div>
-      </div>
-    </section>
-  </main>
+class BST {
+  constructor(){this.root=null;}
 
-  <footer>
-    <p>Built for learning purposes &mdash; Binary Search Tree Visualizer</p>
-  </footer>
+  insert(v){
+    const n=new Node(v);
+    if(!this.root){this.root=n;return true;}
+    let c=this.root;
+    while(true){
+      if(v===c.v)return false;
+      if(v<c.v){if(!c.l){c.l=n;return true;}c=c.l;}
+      else     {if(!c.r){c.r=n;return true;}c=c.r;}
+    }
+  }
 
-  <script src="script.js"></script>
+  find(v){let c=this.root;while(c){if(v===c.v)return true;c=v<c.v?c.l:c.r;}return false;}
+
+  delete(v){
+    let par=null,cur=this.root,dir=null;
+    while(cur&&cur.v!==v){par=cur;if(v<cur.v){dir='l';cur=cur.l;}else{dir='r';cur=cur.r;}}
+    if(!cur)return false;
+    if(cur.l&&cur.r){
+      let sp=cur,s=cur.r;
+      while(s.l){sp=s;s=s.l;}
+      cur.v=s.v; par=sp; cur=s; dir=(sp.l===s)?'l':'r';
+    }
+    const child=cur.l||cur.r;
+    if(!par)this.root=child; else par[dir]=child;
+    return true;
+  }
+
+  inorder()  {const r=[];(function t(n){if(!n)return;t(n.l);r.push(n.v);t(n.r);})(this.root);return r;}
+  preorder() {const r=[];(function t(n){if(!n)return;r.push(n.v);t(n.l);t(n.r);})(this.root);return r;}
+  postorder(){const r=[];(function t(n){if(!n)return;t(n.l);t(n.r);r.push(n.v);})(this.root);return r;}
+  height(n=this.root){return n?1+Math.max(this.height(n.l),this.height(n.r)):0;}
+  count(n=this.root) {return n?1+this.count(n.l)+this.count(n.r):0;}
+  min(){let c=this.root;while(c&&c.l)c=c.l;return c?c.v:null;}
+  max(){let c=this.root;while(c&&c.r)c=c.r;return c?c.v:null;}
+}
+
+// ── Canvas ───────────────────────────────────────────────────────
+const bst=new BST(), canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+let highlight=null, hlColor='#4ade80', W=0, H=380;
+
+function resize(){
+  const wrap=document.getElementById('canvas-wrap');
+  W=canvas.width=wrap.clientWidth-48; H=canvas.height=380; draw();
+}
+window.addEventListener('resize',resize);
+
+function layout(node,lo,hi,depth){
+  if(!node)return;
+  node._x=(lo+hi)/2*W;
+  node._y=36+depth*Math.min(72,(H-60)/Math.max(bst.height()-1,1));
+  layout(node.l,lo,(lo+hi)/2,depth+1);
+  layout(node.r,(lo+hi)/2,hi,depth+1);
+}
+
+function draw(){
+  if(!W){W=canvas.width;H=canvas.height;}
+  ctx.clearRect(0,0,W,H);
+  if(!bst.root){
+    ctx.fillStyle='#2a2a35'; ctx.font='14px Courier New';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('Tree is empty — insert a value above.',W/2,H/2);
+    update(); return;
+  }
+  layout(bst.root,0,1,0);
+  // edges
+  ctx.strokeStyle='#1e3a1e'; ctx.lineWidth=1.5;
+  (function edges(n){
+    if(!n)return;
+    [n.l,n.r].forEach(c=>{if(c){ctx.beginPath();ctx.moveTo(n._x,n._y);ctx.lineTo(c._x,c._y);ctx.stroke();edges(c);}});
+  })(bst.root);
+  // nodes
+  (function nodes(n){
+    if(!n)return;
+    const hl=n.v===highlight, R=19;
+    // shadow
+    ctx.beginPath(); ctx.arc(n._x,n._y+2,R,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fill();
+    // circle
+    ctx.beginPath(); ctx.arc(n._x,n._y,R,0,Math.PI*2);
+    ctx.fillStyle=hl?hlColor:'#162416'; ctx.fill();
+    ctx.strokeStyle=hl?hlColor:'#4ade80'; ctx.lineWidth=hl?2.5:1.5; ctx.stroke();
+    // text
+    ctx.fillStyle=hl?'#071407':'#d4f7d4';
+    ctx.font=`bold ${Math.abs(n.v)>99?10:13}px Courier New`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.v,n._x,n._y);
+    nodes(n.l); nodes(n.r);
+  })(bst.root);
+  update();
+}
+
+function update(){
+  document.getElementById('i-count').textContent=bst.count();
+  document.getElementById('i-height').textContent=bst.height();
+  const mn=bst.min(),mx=bst.max();
+  document.getElementById('i-min').textContent=mn!==null?mn:'—';
+  document.getElementById('i-max').textContent=mx!==null?mx:'—';
+  const io=bst.inorder(),pre=bst.preorder(),post=bst.postorder();
+  document.getElementById('t-in').textContent  =io.length  ?io.join(' → ')  :'—';
+  document.getElementById('t-pre').textContent =pre.length ?pre.join(' → ') :'—';
+  document.getElementById('t-post').textContent=post.length?post.join(' → '):'—';
+}
+
+// ── UI ───────────────────────────────────────────────────────────
+const msgEl=document.getElementById('msg');
+function msg(text,type=''){msgEl.textContent=text;msgEl.className=type;}
+function getVal(){const v=parseInt(document.getElementById('val').value);return isNaN(v)?null:v;}
+function flash(v,color,ms=1200){highlight=v;hlColor=color;draw();setTimeout(()=>{highlight=null;draw();},ms);}
+
+function doInsert(){
+  const v=getVal(); if(v===null)return msg('Please enter a number.','err');
+  if(!bst.insert(v))return msg(`${v} already exists.`,'warn');
+  flash(v,'#4ade80'); msg(`Inserted ${v}.`);
+}
+function doDelete(){
+  const v=getVal(); if(v===null)return msg('Please enter a number.','err');
+  if(!bst.delete(v))return msg(`${v} not found.`,'err');
+  highlight=null; draw(); msg(`Deleted ${v}.`);
+}
+function doFind(){
+  const v=getVal(); if(v===null)return msg('Please enter a number.','err');
+  if(bst.find(v)){flash(v,'#60a5fa',1500);msg(`Found ${v}.`,'info');}
+  else msg(`${v} not found.`,'err');
+}
+function doClear(){bst.root=null;highlight=null;draw();msg('Tree cleared.');}
+function doRandom(){
+  doClear();
+  const used=new Set();
+  while(used.size<9)used.add(Math.floor(Math.random()*90)+5);
+  [...used].forEach(v=>bst.insert(v)); draw();
+  msg(`Random tree: ${[...used].join(', ')}`);
+}
+
+document.getElementById('val').addEventListener('keydown',e=>{if(e.key==='Enter')doInsert();});
+resize();
+</script>
 </body>
 </html>
